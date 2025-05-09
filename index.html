@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neon Stopwatch</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at center, #0a0e23, #000000);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .container {
+      background: rgba(15, 23, 42, 0.8);
+      padding: 40px 30px;
+      border-radius: 25px;
+      box-shadow: 0 0 30px rgba(0, 247, 255, 0.3),
+                  inset 0 0 10px rgba(0, 247, 255, 0.2);
+      text-align: center;
+      max-width: 450px;
+      width: 90%;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 247, 255, 0.2);
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5rem;
+      margin-bottom: 25px;
+      background: linear-gradient(90deg, #00f7ff, #00a1ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+      letter-spacing: 3px;
+    }
+
+    .time {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.5rem;
+      margin-bottom: 30px;
+      letter-spacing: 3px;
+      color: #00f7ff;
+      text-shadow: 0 0 10px #00f7ff;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      border: 1px solid rgba(0, 247, 255, 0.2);
+      box-shadow: inset 0 0 15px rgba(0, 247, 255, 0.1);
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .buttons button {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #00f7ff, #00a1ff);
+      color: #000;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 247, 255, 0.4);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .buttons button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 247, 255, 0.6);
+    }
+
+    .buttons button:active {
+      transform: translateY(1px);
+    }
+
+    .buttons button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+
+    .buttons button:hover::before {
+      left: 100%;
+    }
+
+    .buttons button i {
+      font-size: 1.1rem;
+    }
+
+    .laps-container {
+      margin-top: 25px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .laps-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #00f7ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .laps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .lap {
+      padding: 10px 15px;
+      background: rgba(0, 247, 255, 0.05);
+      margin-bottom: 5px;
+      border-left: 3px solid #00f7ff;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .lap:hover {
+      background: rgba(0, 247, 255, 0.1);
+      transform: translateX(5px);
+    }
+
+    .lap-number {
+      font-weight: bold;
+      color: #00f7ff;
+      min-width: 50px;
+    }
+
+    .lap-time {
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .delete-lap {
+      background: transparent;
+      border: none;
+      color: #ff4d4d;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      padding: 5px;
+      border-radius: 50%;
+    }
+
+    .delete-lap:hover {
+      color: #ff0000;
+      transform: scale(1.2);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 247, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(#00f7ff, #00a1ff);
+      border-radius: 10px;
+    }
+
+    @media (max-width: 480px) {
+      .time {
+        font-size: 2.5rem;
+      }
+      
+      .buttons {
+        gap: 10px;
+      }
+      
+      .buttons button {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Animation for running state */
+    @keyframes pulse {
+      0% { box-shadow: 0 0 5px rgba(0, 247, 255, 0.5); }
+      50% { box-shadow: 0 0 20px rgba(0, 247, 255, 0.8); }
+      100% { box-shadow: 0 0 5px rgba(0, 247, 255, 0.5); }
+    }
+
+    .running {
+      animation: pulse 2s infinite;
+    }
+
+    /* Floating animation */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  
+  <div class="container floating">
+    <h1><i class="fas fa-stopwatch"></i> STOPWATCH</h1>
+    <div class="time" id="display">00:00:00</div>
+    <div class="buttons">
+      <button onclick="start()"><i class="fas fa-play"></i> Start</button>
+      <button onclick="pause()"><i class="fas fa-pause"></i> Pause</button>
+      <button onclick="reset()"><i class="fas fa-redo"></i> Reset</button>
+      <button onclick="lap()"><i class="fas fa-flag"></i> Lap</button>
+    </div>
+    <div class="laps-container">
+      <div class="laps-title"><i class="fas fa-list-ol"></i> Laps</div>
+      <div class="laps" id="laps"></div>
+    </div>
+  </div>
+
+  <script>
+    let startTime, elapsedTime = 0, timerInterval;
+    let isRunning = false;
+    const display = document.getElementById("display");
+    const lapsContainer = document.getElementById("laps");
+    const container = document.querySelector(".container");
+
+    function start() {
+      if (!isRunning) {
+        isRunning = true;
+        container.classList.add("running");
+        startTime = Date.now() - elapsedTime;
+        timerInterval = setInterval(updateTime, 10);
+      }
+    }
+
+    function updateTime() {
+      elapsedTime = Date.now() - startTime;
+      display.textContent = formatTime(elapsedTime);
+    }
+
+    function pause() {
+      if (isRunning) {
+        isRunning = false;
+        container.classList.remove("running");
+        clearInterval(timerInterval);
+      }
+    }
+
+    function reset() {
+      pause();
+      display.textContent = "00:00:00";
+      elapsedTime = 0;
+      lapsContainer.innerHTML = "";
+      // Add reset animation
+      container.classList.add("reset-animation");
+      setTimeout(() => {
+        container.classList.remove("reset-animation");
+      }, 500);
+    }
+
+    function lap() {
+      if (elapsedTime > 0) {
+        const lapTime = document.createElement("div");
+        lapTime.className = "lap";
+        
+        const lapNumber = document.createElement("span");
+        lapNumber.className = "lap-number";
+        lapNumber.textContent = `Lap ${lapsContainer.children.length + 1}`;
+        
+        const timeSpan = document.createElement("span");
+        timeSpan.className = "lap-time";
+        timeSpan.textContent = formatTime(elapsedTime);
+        
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-lap";
+        deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+        deleteBtn.onclick = function() {
+          lapTime.classList.add("fade-out");
+          setTimeout(() => {
+            lapTime.remove();
+            renumberLaps();
+          }, 300);
+        };
+        
+        lapTime.appendChild(lapNumber);
+        lapTime.appendChild(timeSpan);
+        lapTime.appendChild(deleteBtn);
+        
+        // Add animation for new lap
+        lapTime.style.opacity = "0";
+        lapTime.style.transform = "translateY(20px)";
+        lapsContainer.prepend(lapTime);
+        
+        setTimeout(() => {
+          lapTime.style.opacity = "1";
+          lapTime.style.transform = "translateY(0)";
+        }, 10);
+      }
+    }
+
+    function renumberLaps() {
+      const laps = document.querySelectorAll(".lap-number");
+      laps.forEach((lap, index) => {
+        lap.textContent = `Lap ${index + 1}`;
+      });
+    }
+
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      const milliseconds = String(Math.floor((ms % 1000) / 10)).padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+    }
+
+    // Create particle effect
+    function createParticles() {
+      const particlesContainer = document.getElementById("particles");
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement("div");
+        particle.style.position = "absolute";
+        particle.style.width = `${Math.random() * 5 + 1}px`;
+        particle.style.height = particle.style.width;
+        particle.style.backgroundColor = `rgba(0, 247, 255, ${Math.random() * 0.5 + 0.1})`;
+        particle.style.borderRadius = "50%";
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particle.style.opacity = "0";
+        
+        // Random animation
+        const duration = Math.random() * 20 + 10;
+        const delay = Math.random() * 5;
+        particle.style.animation = `float ${duration}s linear ${delay}s infinite`;
+        
+        particlesContainer.appendChild(particle);
+        
+        // Fade in
+        setTimeout(() => {
+          particle.style.opacity = "1";
+        }, delay * 1000);
+      }
+    }
+
+    // Initialize
+    createParticles();
+  </script>
+</body>
+</html>
